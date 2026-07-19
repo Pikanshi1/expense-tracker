@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@media print {
+
+  button {
+    display: none !important;
+  }
+
+  nav,
+  aside,
+  .sidebar,
+  .navbar {
+    display: none !important;
+  }
+
+  body {
+    background: white;
+  }
+
+}
