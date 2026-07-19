@@ -1,5 +1,5 @@
 const Notification = require("../models/notification");
-const Expense = require("../models/Expense");
+const Expense = require("../models/expense");
 
 // Get all notifications
 const getNotifications = async (req, res) => {

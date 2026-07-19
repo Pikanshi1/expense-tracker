@@ -3,7 +3,7 @@ const { Parser } = require("json2csv");
 const PDFDocument = require("pdfkit");
 const Budget = require("../models/Budget");
 const { createNotification } = require("./notificationController");
-const Notification = require("../models/Notification");
+const Notification = require("../models/notification");
 
 const exportPDF = async (req, res) => {
   try {
