@@ -6,9 +6,9 @@ import ExpenseChart from "../components/ExpenseChart";
 import CategoryPieChart from "../components/CategoryPieChart";
 import IncomeExpenseChart from "../components/IncomeExpenseChart";
 import Last7DaysChart from "../components/Last7DaysChart";
-import { exportToPDF } from "../utils/ExportPDF";
-import { exportToCSV } from "../utils/ExportCSV";
-import { exportToExcel } from "../utils/ExportExcel";
+import { exportToPDF } from "../utils/exportPDF";
+import { exportToCSV } from "../utils/exportCSV";
+import { exportToExcel } from "../utils/exportExcel";
 
 function Analytics() {
   const [expenses, setExpenses] = useState([]);
