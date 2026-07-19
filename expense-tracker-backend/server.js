@@ -18,18 +18,21 @@ const limiter=rateLimit({
 });
 
 connectDB();
-app.use(helmet());
-app.use(limiter);
-app.use(express.json());
 app.use(
   cors({
     origin: [
       "http://localhost:5173",
-      "https://YOUR-VERCEL-DOMAIN.vercel.app",
+      "https://expense-tracker-five-silk-48.vercel.app",
+      "https://expense-tracker-git-main-pikanshi1s-projects.vercel.app",
+      "https://expense-tracker-1hp1y1t4f-pikanshi1s-projects.vercel.app",
     ],
     credentials: true,
   })
 );
+app.use(helmet());
+app.use(limiter);
+app.use(express.json());
+
 app.use("/uploads", express.static("uploads"));
 app.use("/api/users", userRoutes);
 app.use("/api/expenses", expenseRoutes);
