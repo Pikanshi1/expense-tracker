@@ -46,8 +46,6 @@ app.get("/", (req, res) => {
     res.send("Expense Tracker Backend Running...");
 });
 
-
-
 const PORT = process.env.PORT || 5000;
 
 app.listen(PORT, () => {
