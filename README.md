@@ -1,45 +1,108 @@
 # 💰 Expense Tracker
 
-A full-stack personal finance management application designed to help users **track income and expenses, manage budgets, monitor financial goals, and handle recurring transactions** from a single dashboard.
+> A full-stack personal finance management application for tracking **income, expenses, budgets, recurring transactions, and financial goals** through a centralized and intuitive dashboard.
 
-🔗 **Live Demo:** [Expense Tracker](https://expense-tracker-five-silk-48.vercel.app?utm_source=chatgpt.com)
+<p align="center">
+  <a href="https://expense-tracker-five-silk-48.vercel.app">
+    <img src="https://img.shields.io/badge/Live%20Demo-Visit%20App-success?style=for-the-badge" alt="Live Demo">
+  </a>
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB" alt="React">
+  <img src="https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white" alt="Vite">
+  <img src="https://img.shields.io/badge/Tailwind_CSS-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white" alt="Tailwind CSS">
+  <img src="https://img.shields.io/badge/Node.js-339933?style=for-the-badge&logo=nodedotjs&logoColor=white" alt="Node.js">
+  <img src="https://img.shields.io/badge/Express.js-000000?style=for-the-badge&logo=express&logoColor=white" alt="Express.js">
+  <img src="https://img.shields.io/badge/MongoDB-47A248?style=for-the-badge&logo=mongodb&logoColor=white" alt="MongoDB">
+</p>
+
+---
+
+## 📌 Overview
+
+**Expense Tracker** is a full-stack web application designed to make personal finance management simple and organized.
+
+Users can manage their financial activity from a single dashboard, including expenses, income, budgets, financial goals, and recurring transactions.
+
+The application combines a responsive frontend with a RESTful backend and MongoDB database to provide a complete end-to-end financial management experience.
 
 ---
 
 ## ✨ Features
 
-* 🔐 **Authentication** — Secure user registration and login using JWT
-* 💸 **Expense Management** — Add, edit, delete, and manage expenses
-* 💰 **Income Tracking** — Keep track of income and financial activity
-* 📊 **Dashboard Analytics** — Visualize spending and financial insights
-* 🏷️ **Categories** — Organize transactions by category
-* 🔎 **Search & Filtering** — Quickly find specific transactions
-* 🎯 **Financial Goals** — Set and track personal financial goals
-* 💳 **Budget Management** — Create and monitor spending budgets
-* 🔄 **Recurring Transactions** — Manage recurring income and expenses
-* 🔔 **Notifications** — Stay updated with important financial activity
-* 👤 **Profile Management** — Manage personal account information
-* 🖼️ **Profile Image Upload** — Upload and manage profile pictures
-* 📱 **Responsive Design** — Optimized for desktop and mobile devices
+### 🔐 Authentication & User Management
+
+- User registration and login
+- JWT-based authentication
+- Protected API routes
+- Secure password hashing with Bcrypt
+- Profile management
+- Profile image upload
+
+### 💸 Expense & Income Management
+
+- Add, edit, and delete expenses
+- Track income and expenses
+- Categorize transactions
+- Search and filter transactions
+- Track transaction history
+
+### 💳 Budget Management
+
+- Create and manage budgets
+- Monitor spending against budgets
+- Track budget-related activity
+
+### 🎯 Financial Goals
+
+- Create financial goals
+- Monitor goal progress
+- Manage multiple financial objectives
+
+### 🔄 Recurring Transactions
+
+- Manage recurring income
+- Manage recurring expenses
+- Organize regular financial activity
+
+### 📊 Dashboard & Analytics
+
+- Centralized financial dashboard
+- Spending insights
+- Category-based financial information
+- Financial activity overview
+
+### 🔔 Notifications
+
+- Financial activity notifications
+- Important account updates
+
+### 📱 Responsive Design
+
+- Responsive user interface
+- Desktop and mobile friendly
+- Clean and intuitive navigation
 
 ---
 
 ## 🖥️ Screenshots
 
-> Add screenshots of your dashboard, transactions, budgets, goals, and profile pages here.
+### 📊 Dashboard
 
-```text
-📸 Dashboard
-📸 Expense Management
-📸 Budget Management
-📸 Financial Goals
-```
-
-For example:
-
-```markdown
 ![Dashboard](screenshots/dashboard.png)
-```
+
+### 💸 Expense Management
+
+![Expense Management](screenshots/expenses.png)
+
+### 💰 Budget Management
+
+![Budget Management](screenshots/budgets.png)
+
+### 🎯 Financial Goals
+
+![Financial Goals](screenshots/goals.png)
 
 ---
 
@@ -47,75 +110,94 @@ For example:
 
 ### Frontend
 
-* React.js
-* Vite
-* Tailwind CSS
-* React Router
-* Axios
-* React Hook Form
+| Technology      | Purpose                       |
+| --------------- | ----------------------------- |
+| React.js        | UI development                |
+| Vite            | Frontend build tool           |
+| Tailwind CSS    | Styling and responsive design |
+| React Router    | Client-side routing           |
+| Axios           | API communication             |
+| React Hook Form | Form management               |
 
 ### Backend
 
-* Node.js
-* Express.js
-* MongoDB
-* Mongoose
-* JWT
-* Bcrypt
-* Multer
+| Technology | Purpose                 |
+| ---------- | ----------------------- |
+| Node.js    | Runtime environment     |
+| Express.js | REST API framework      |
+| MongoDB    | Database                |
+| Mongoose   | MongoDB object modeling |
+| JWT        | Authentication          |
+| Bcrypt     | Password hashing        |
+| Multer     | File/image uploads      |
 
 ### Deployment
 
-* Vercel — Frontend
-* Render — Backend
-* MongoDB Atlas — Database
+| Service       | Usage               |
+| ------------- | ------------------- |
+| Vercel        | Frontend deployment |
+| Render        | Backend deployment  |
+| MongoDB Atlas | Cloud database      |
 
 ---
 
 ## 🏗️ Architecture
 
 ```text
-┌─────────────────────┐
-│      React + Vite   │
-│      Frontend       │
-└──────────┬──────────┘
-           │
-           │ REST API
-           ▼
-┌─────────────────────┐
-│   Node.js + Express │
-│      Backend        │
-└──────────┬──────────┘
-           │
-           ▼
-┌─────────────────────┐
-│       MongoDB       │
-│      Database       │
-└─────────────────────┘
+                         ┌─────────────────────┐
+                         │        User         │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │    React + Vite     │
+                         │      Frontend       │
+                         └──────────┬──────────┘
+                                    │
+                              REST API
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │  Node.js + Express  │
+                         │       Backend       │
+                         └──────────┬──────────┘
+                                    │
+                                    ▼
+                         ┌─────────────────────┐
+                         │       MongoDB       │
+                         │      Database       │
+                         └─────────────────────┘
 ```
 
 ---
 
-## 🔐 Authentication
+## 🔐 Authentication Flow
 
-The application uses **JWT-based authentication** to protect user-specific resources.
-
-### Authentication Flow
+The application uses **JWT-based authentication** to secure user accounts and protected resources.
 
 ```text
 User
-  ↓
+  │
+  ▼
 Register / Login
-  ↓
+  │
+  ▼
 Backend validates credentials
-  ↓
-JWT Token generated
-  ↓
+  │
+  ▼
+JWT Token Generated
+  │
+  ▼
 Token stored on client
-  ↓
+  │
+  ▼
 Token attached to protected API requests
-  ↓
-Authenticated response
+  │
+  ▼
+Backend verifies token
+  │
+  ▼
+Authenticated Response
 ```
 
 Protected requests use:
@@ -126,19 +208,21 @@ Authorization: Bearer <JWT_TOKEN>
 
 ---
 
-## 🌐 Deployment
+## 🌐 Live Deployment
 
 ### Frontend
 
-[Live Frontend — Vercel](https://expense-tracker-five-silk-48.vercel.app?utm_source=chatgpt.com)
+**Live Application:**
+https://expense-tracker-five-silk-48.vercel.app
 
-### Backend API
+### Backend
 
-[Backend API — Render](https://expense-tracker-8pzc.onrender.com?utm_source=chatgpt.com)
+**Backend API:**
+https://expense-tracker-8pzc.onrender.com
 
 ### API Base URL
 
-**Local**
+**Development**
 
 ```text
 http://localhost:5000/api
@@ -154,20 +238,20 @@ https://expense-tracker-8pzc.onrender.com/api
 
 # 🚀 Getting Started
 
-Follow these steps to run the project locally.
+Follow the steps below to run the project locally.
 
 ## Prerequisites
 
-Make sure you have installed:
+Make sure you have the following installed:
 
-* Node.js
-* npm
-* MongoDB / MongoDB Atlas
-* Git
+- Node.js
+- npm
+- Git
+- MongoDB or MongoDB Atlas account
 
 ---
 
-## 1. Clone the Repository
+## 📥 Clone the Repository
 
 ```bash
 git clone <repository-url>
@@ -176,10 +260,17 @@ cd Expense-Tracker
 
 ---
 
-## 2. Backend Setup
+## ⚙️ Backend Setup
+
+Navigate to the backend directory:
 
 ```bash
 cd expense-tracker-backend
+```
+
+Install dependencies:
+
+```bash
 npm install
 ```
 
@@ -205,12 +296,17 @@ http://localhost:5000
 
 ---
 
-## 3. Frontend Setup
+## 🎨 Frontend Setup
 
-Open a new terminal:
+Open a new terminal and navigate to the frontend:
 
 ```bash
 cd expense-tracker-frontend
+```
+
+Install dependencies:
+
+```bash
 npm install
 ```
 
@@ -258,12 +354,18 @@ Expense-Tracker/
 │   ├── uploads/
 │   └── package.json
 │
+├── screenshots/
+│   ├── dashboard.png
+│   ├── expenses.png
+│   ├── budgets.png
+│   └── goals.png
+│
 └── README.md
 ```
 
 ---
 
-## ⚙️ Environment Variables
+## 🔑 Environment Variables
 
 ### Frontend
 
@@ -275,11 +377,11 @@ VITE_API_URL=http://localhost:5000/api
 
 ```env
 PORT=5000
-MONGO_URI=your_database_url
+MONGO_URI=your_mongodb_connection_string
 JWT_SECRET=your_secret_key
 ```
 
-> Never commit your `.env` file or expose secret keys in the repository.
+> ⚠️ Never commit `.env` files or expose API keys, database credentials, or JWT secrets in your repository.
 
 ---
 
@@ -287,52 +389,61 @@ JWT_SECRET=your_secret_key
 
 Before deployment, verify the following:
 
-* [ ] User registration
-* [ ] User login
-* [ ] JWT authentication
-* [ ] Dashboard loading
-* [ ] Add expense
-* [ ] Edit expense
-* [ ] Delete expense
-* [ ] Income tracking
-* [ ] Budget creation
-* [ ] Financial goals
-* [ ] Recurring transactions
-* [ ] Notifications
-* [ ] Profile management
-* [ ] Profile image upload
-* [ ] Logout
-* [ ] Responsive UI
+- [ ] User registration
+- [ ] User login
+- [ ] JWT authentication
+- [ ] Dashboard
+- [ ] Add expense
+- [ ] Edit expense
+- [ ] Delete expense
+- [ ] Income tracking
+- [ ] Budget management
+- [ ] Financial goals
+- [ ] Recurring transactions
+- [ ] Notifications
+- [ ] Profile management
+- [ ] Profile image upload
+- [ ] Logout
+- [ ] Responsive design
 
 ---
 
 ## 🚧 Future Improvements
 
-* 📈 Advanced financial analytics
-* 📊 Monthly and yearly reports
-* 📄 Export transactions to CSV/PDF
-* 💱 Multi-currency support
-* 🔔 Smart spending alerts
-* 🤖 AI-powered spending insights
-* 📅 Calendar-based transaction tracking
-* 🌙 Dark mode
-* 📱 Progressive Web App support
+- 📈 Advanced financial analytics
+- 📊 Monthly and yearly financial reports
+- 📄 Export transactions to CSV/PDF
+- 💱 Multi-currency support
+- 🔔 Smart spending alerts
+- 🤖 AI-powered financial insights
+- 📅 Calendar-based transaction tracking
+- 🌙 Dark mode
+- 📱 Progressive Web App support
 
 ---
 
-## 🎯 Project Goal
+## 🎯 Project Highlights
 
-The goal of Expense Tracker is to provide users with a **simple, centralized, and intuitive way to manage their personal finances** while providing useful insights into their spending habits.
+- Full-stack MERN-style architecture
+- RESTful API integration
+- JWT-based authentication
+- MongoDB database integration
+- Responsive UI with Tailwind CSS
+- Cloud deployment
+- User profile and image management
+- Budget and financial goal tracking
+- Recurring transaction management
 
 ---
 
 ## 👩‍💻 Author
 
-**Pikanshi Mehta**
+### Pikanshi Mehta
 
-Computer Science Engineering
-NIT Hamirpur
+**Computer Science Engineering — NIT Hamirpur**
 
 ---
 
-⭐ If you found this project useful, consider giving it a **star**!
+<p align="center">
+  ⭐ If you found this project useful, consider giving it a star!
+</p>
