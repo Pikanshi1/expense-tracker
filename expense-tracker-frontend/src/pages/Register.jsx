@@ -89,7 +89,7 @@ function Register() {
           <div className="auth-form-footer"><span>Already have an account?</span> <Link to="/login">Log in</Link></div>
         </section>
       </section>
-      <footer className="auth-copyright">© {new Date().getFullYear()} Expensewise. Make every rupee count.</footer>
+      <footer className="auth-copyright">© {new Date().getFullYear()} Expense Tracker. Make every rupee count.</footer>
     </main>
   );
 }
