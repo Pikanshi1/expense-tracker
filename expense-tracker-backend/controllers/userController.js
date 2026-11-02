@@ -20,7 +20,7 @@ const registerUser = async (req, res) => {
         }
 
         // Check if email already exists
-        if (String(password).length < 8 || !/[A-Z]/.test(password) || !/\\d/.test(password)) {
+        if (String(password).length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
             return res.status(400).json({ message: "Password must be at least 8 characters and include an uppercase letter and a number" });
         }
 
@@ -296,7 +296,7 @@ const forgotPassword = async (req, res) => {
       user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
       await user.save();
 
-      const frontendUrl = process.env.FRONTEND_URL.replace(/\\/$/, "");
+      const frontendUrl = process.env.FRONTEND_URL.endsWith("/") ? process.env.FRONTEND_URL.slice(0, -1) : process.env.FRONTEND_URL;
       const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
 
       try {
@@ -327,7 +327,7 @@ const resetPassword = async (req, res) => {
       return res.status(400).json({ message: "A reset token and new password are required" });
     }
 
-    if (String(password).length < 8 || !/[A-Z]/.test(password) || !/\\d/.test(password)) {
+    if (String(password).length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
       return res.status(400).json({
         message: "Password must be at least 8 characters and include an uppercase letter and a number"
       });
