@@ -65,8 +65,13 @@ const loginUser = async (req, res) => {
 
         const { email, password } = req.body;
 
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
         // Find user
-        const user = await User.findOne({ email });
+        const normalizedEmail = String(email).trim().toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail });
 
         if (!user) {
             return res.status(400).json({
@@ -124,6 +129,10 @@ const loginUser = async (req, res) => {
 const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
+
+    if (String(newPassword).length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "New password must be at least 8 characters and include an uppercase letter and a number" });
+    }
 
     const user = await User.findById(req.user.id);
 
