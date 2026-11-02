@@ -6,13 +6,10 @@ const createGoal = async (req, res) => {
   try {
     const { title, targetAmount, deadline } = req.body;
 
-    const goal = await Goal.create({
-      user: req.user.id,
-      title,
-      targetAmount,
-      deadline,
-      savedAmount: 0,
-    });
+    if (!title?.trim() || !Number.isFinite(Number(targetAmount)) || Number(targetAmount) <= 0 || !deadline || Number.isNaN(new Date(deadline).getTime())) {
+      return res.status(400).json({ message: "Enter a title, positive target amount and valid deadline." });
+    }
+    const goal = await Goal.create({ user: req.user.id, title: title.trim(), targetAmount: Number(targetAmount), deadline, savedAmount: 0 });
 
     res.status(201).json(goal);
   } catch (error) {
@@ -102,6 +99,8 @@ const deleteGoal = async (req, res) => {
 const addSavings = async (req, res) => {
   try {
     const { amount } = req.body;
+    const contribution = Number(amount);
+    if (!Number.isFinite(contribution) || contribution <= 0) return res.status(400).json({ message: "Savings amount must be greater than zero." });
 
     const goal = await Goal.findById(req.params.id);
 
@@ -117,7 +116,7 @@ const addSavings = async (req, res) => {
       });
     }
 
-    goal.savedAmount += Number(amount);
+    goal.savedAmount += contribution;
 
     if (goal.savedAmount >= goal.targetAmount) {
       goal.savedAmount = goal.targetAmount;
@@ -158,7 +157,7 @@ const getGoalSummary = async (req, res) => {
     const totalTarget = await Goal.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: req.user.id,
         },
       },
       {
@@ -174,7 +173,7 @@ const getGoalSummary = async (req, res) => {
     const totalSaved = await Goal.aggregate([
       {
         $match: {
-          user: req.user._id,
+          user: req.user.id,
         },
       },
       {

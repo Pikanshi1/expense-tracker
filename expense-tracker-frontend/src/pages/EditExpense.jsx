@@ -19,18 +19,10 @@ function EditExpense() {
   } = useForm();
 
   useEffect(() => {
-    fetchExpense();
-  }, []);
-
-  const fetchExpense = async () => {
-    try {
-      const data = await getExpenseById(id);
-
-      reset(data.expense);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+    let active = true;
+    getExpenseById(id).then(data => { if (active) reset({ ...data, date: data.date ? new Date(data.date).toISOString().slice(0, 16) : "" }); }).catch(console.error);
+    return () => { active = false; };
+  }, [id, reset]);
 
   const onSubmit = async (formData) => {
     try {
@@ -110,8 +102,14 @@ function EditExpense() {
         />
 
         <input
-          type="date"
+          type="datetime-local"
           {...register("date")}
+          className="w-full border p-2 rounded"
+        />
+
+        <textarea
+          {...register("notes")}
+          placeholder="Notes (optional)"
           className="w-full border p-2 rounded"
         />
 

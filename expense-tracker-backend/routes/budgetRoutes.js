@@ -6,10 +6,13 @@ const {
   getBudgets,
    deleteBudget,
 } = require("../controllers/budgetController");
+const { getAdaptiveBudget, saveAdaptiveBudget } = require("../controllers/adaptiveBudgetController");
 
 const router = express.Router();
 
 router.post("/", protect, setBudget);
+router.get("/adaptive", protect, getAdaptiveBudget);
+router.put("/adaptive", protect, saveAdaptiveBudget);
 
 router.get("/", protect, getBudgets);
 

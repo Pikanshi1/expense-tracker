@@ -49,12 +49,14 @@ const expenseSchema = new mongoose.Schema({
 
     },
 
-    description:{
+    description:{ type:String, default:"", maxlength:2000 },
+    notes:{ type:String, default:"", maxlength:2000 },
 
-        type:String,
-
-        default:""
-
+    receiptUrl: { type: String, default: "" },
+    location: {
+        latitude: { type: Number, min: -90, max: 90 },
+        longitude: { type: Number, min: -180, max: 180 },
+        label: { type: String, maxlength: 300, default: "" }
     },
 
     date:{

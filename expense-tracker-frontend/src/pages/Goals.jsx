@@ -9,8 +9,10 @@ import {
   updateGoal,
 } from "../services/goalService";
 import { toast } from "react-toastify";
+import { usePreferences } from "../context/PreferencesContext";
 
 function Goals() {
+  const { formatCurrency } = usePreferences();
   const [goals, setGoals] = useState([]);
 
   const [form, setForm] = useState({
@@ -31,24 +33,14 @@ function Goals() {
   
 
   useEffect(() => {
-    loadGoals();
+    let active = true;
+    getGoals().then(data => { if (active) setGoals(data); }).catch(console.error);
+    return () => { active = false; };
   }, []);
 
   const loadGoals = async () => {
-    try {
-      const data = await getGoals();
-      setGoals(data);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-  const fetchGoals = async () => {
-    try {
-      const data = await getGoals();
-      setGoals(data);
-    } catch (error) {
-      console.log(error);
-    }
+    try { const data = await getGoals(); setGoals(data); }
+    catch (error) { console.error(error); }
   };
   const totalTarget = goals.reduce(
   (sum, goal) => sum + Number(goal.targetAmount || 0),
@@ -72,14 +64,27 @@ const completedGoals = goals.filter(
       setEditingGoal(null);
 
       // refresh goals
-      fetchGoals();
+      loadGoals();
     } catch (error) {
       console.log(error);
     }
   };
 
+
+  const handleDeleteGoal = async () => {
+    if (!deletingGoal) return;
+    try {
+      await deleteGoal(deletingGoal._id);
+      toast.success("Goal deleted successfully.");
+      setDeletingGoal(null);
+      await loadGoals();
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to delete goal.");
+    }
+  };
+
   const handleCreate = async () => {
-    if (!form.title || !form.targetAmount || !form.deadline) {
+    if (!form.title.trim() || !Number.isFinite(Number(form.targetAmount)) || Number(form.targetAmount) <= 0 || !form.deadline) {
       toast.error("Please fill all fields");
       return;
     }
@@ -102,7 +107,10 @@ const completedGoals = goals.filter(
   };
 
   const handleAddSavings = async () => {
-    if (!savingGoal) return;
+    if (!savingGoal || !Number.isFinite(Number(savingAmount)) || Number(savingAmount) <= 0) {
+      toast.error("Enter a savings amount greater than zero.");
+      return;
+    }
 
     await addSavings(savingGoal._id, Number(savingAmount));
 
@@ -223,10 +231,10 @@ const completedGoals = goals.filter(
 
                   <div className="text-right">
                     <h3 className="text-2xl font-bold text-blue-600">
-                      ₹{goal.savedAmount}
+                      {formatCurrency(goal.savedAmount)}
                     </h3>
 
-                    <p className="text-gray-500">of ₹{goal.targetAmount}</p>
+                    <p className="text-gray-500">of {formatCurrency(goal.targetAmount)}</p>
                   </div>
                 </div>
 
@@ -264,7 +272,7 @@ const completedGoals = goals.filter(
                           : "text-green-600 font-semibold"
                       }
                     >
-                      ₹{remaining > 0 ? remaining : 0}
+                      {formatCurrency(remaining > 0 ? remaining : 0)}
                     </span>
                   </div>
                 </div>
@@ -430,14 +438,14 @@ const completedGoals = goals.filter(
             <p className="text-gray-600 mb-4">
               Saved:
               <span className="font-semibold ml-2">
-                ₹{savingGoal.savedAmount}
+                {formatCurrency(savingGoal.savedAmount)}
               </span>
             </p>
 
             <p className="text-gray-600 mb-6">
               Target:
               <span className="font-semibold ml-2">
-                ₹{savingGoal.targetAmount}
+                {formatCurrency(savingGoal.targetAmount)}
               </span>
             </p>
 

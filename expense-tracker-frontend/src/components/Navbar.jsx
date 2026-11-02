@@ -1,6 +1,8 @@
-import { Link, useNavigate  } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaBell, FaUserCircle } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
+import { usePreferences } from "../context/PreferencesContext";
+import { FaMoon, FaSun } from "react-icons/fa";
 import { useEffect, useState } from "react";
 import {
   getNotifications,
@@ -10,6 +12,7 @@ import {
 
 function Navbar() {
   const { user , logout} = useAuth();
+  const { theme, toggleTheme, currency, setCurrency } = usePreferences();
   const navigate = useNavigate();
 
   const [notifications, setNotifications] = useState([]);
@@ -22,14 +25,14 @@ function Navbar() {
     }
   }, [user]);
 
-  const loadNotifications = async () => {
+  async function loadNotifications() {
     try {
       const data = await getNotifications();
       setNotifications(data);
     } catch (error) {
       console.log(error);
     }
-  };
+  }
 
   const unread = notifications.filter((n) => !n.isRead).length;
 
@@ -44,7 +47,11 @@ function Navbar() {
 
       {/* Right Section */}
 
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-3">
+        <select aria-label="Display currency" value={currency} onChange={e=>setCurrency(e.target.value)} className="currency-select">
+          <option value="INR">INR ₹</option><option value="USD">USD $</option><option value="EUR">EUR €</option><option value="GBP">GBP £</option><option value="JPY">JPY ¥</option><option value="CAD">CAD $</option><option value="AUD">AUD $</option>
+        </select>
+        <button type="button" onClick={toggleTheme} className="theme-toggle" aria-label="Toggle light and dark theme">{theme === "dark" ? <FaSun/> : <FaMoon/>}</button>
         {user ? (
           <>
             {/* Notification */}
@@ -165,7 +172,7 @@ function Navbar() {
               >
                 {user?.profileImage ? (
                   <img
-                    src={`http://localhost:5000${user.profileImage}`}
+                    src={`${import.meta.env.VITE_API_URL?.replace(/\/api$/, "") || ""}${user.profileImage}`}
                     alt="Profile"
                     className="w-10 h-10 rounded-full object-cover"
                   />
@@ -184,7 +191,7 @@ function Navbar() {
                 >
                   <Link to="/profile" onClick={() => setShowProfile(false)} className="block w-full px-4 py-3 rounded-lg hover:bg-gray-100">Profile</Link>
 
-                  <button className="w-full text-left px-4 py-3 rounded-lg text-red-600 hover:bg-red-50" onClick={logout}>Logout</button>
+                  <button className="w-full text-left px-4 py-3 rounded-lg text-red-600 hover:bg-red-50" onClick={() => { logout(); setShowProfile(false); navigate("/login"); }}>Logout</button>
                 </div>
               )}
             </div>

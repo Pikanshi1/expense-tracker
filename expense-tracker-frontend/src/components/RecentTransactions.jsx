@@ -1,57 +1,9 @@
-function RecentTransactions({ expenses }) {
-  const recentExpenses = [...expenses]
-    .sort((a, b) => new Date(b.date) - new Date(a.date))
-    .slice(0, 5);
-
-  return (
-    <div className="bg-white rounded-lg shadow p-6 mt-8">
-      <h2 className="text-xl font-semibold mb-4">
-        Recent Transactions
-      </h2>
-
-      {recentExpenses.length === 0 ? (
-        <p className="text-gray-500">
-          No transactions found.
-        </p>
-      ) : (
-        <div className="space-y-4">
-          {recentExpenses.map((expense) => (
-            <div
-              key={expense._id}
-              className="flex justify-between items-center border-b pb-3"
-            >
-              <div>
-                <h3 className="font-medium">
-                  {expense.title}
-                </h3>
-
-                <p className="text-sm text-gray-500">
-                  {expense.category}
-                </p>
-              </div>
-
-              <div className="text-right">
-                <p
-                  className={`font-semibold ${
-                    expense.type === "income"
-                      ? "text-green-600"
-                      : "text-red-600"
-                  }`}
-                >
-                  {expense.type === "income" ? "+" : "-"}₹
-                  {expense.amount}
-                </p>
-
-                <p className="text-xs text-gray-500">
-                  {new Date(expense.date).toLocaleDateString()}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
-  );
+import { usePreferences } from "../context/PreferencesContext";
+function RecentTransactions({ expenses = [] }) {
+  const { formatCurrency } = usePreferences();
+  const recent = [...expenses].sort((a,b)=>new Date(b.date)-new Date(a.date)).slice(0,6);
+  return <section className="app-card mt-8"><div className="flex items-center justify-between mb-5"><div><p className="eyebrow">LATEST ACTIVITY</p><h2 className="section-heading">Recent transactions</h2></div><span className="soft-chip">{recent.length} shown</span></div>
+    {!recent.length ? <p className="muted-copy py-6">Your latest transactions will appear here.</p> : <div className="divide-y divide-[var(--line)]">{recent.map(item=><div key={item._id} className="transaction-row"><div className="transaction-icon">{item.type === "Income" ? "↙" : "↗"}</div><div className="min-w-0 flex-1"><p className="font-semibold truncate">{item.title}</p><p className="muted-copy text-sm">{item.category} · {new Date(item.date).toLocaleDateString()}</p></div><strong className={item.type === "Income" ? "text-emerald-500" : "text-rose-500"}>{item.type === "Income" ? "+" : "−"}{formatCurrency(item.amount)}</strong></div>)}</div>}
+  </section>;
 }
-
 export default RecentTransactions;

@@ -1,19 +1,7 @@
-function SummaryCard({ title, amount, color , isCurrency = true  }) {
-  return (
-    <div className="bg-white rounded-xl shadow p-6">
-
-      <h3 className="text-gray-500">
-        {title}
-      </h3>
-
-      <h2
-        className={`text-3xl font-bold mt-3 ${color}`}
-      >
-        {isCurrency ? `₹${amount}` : amount}
-      </h2>
-
-    </div>
-  );
+import { usePreferences } from "../context/PreferencesContext";
+function SummaryCard({ title, amount, color = "text-sky-500", isCurrency = true, accent = "blue" }) {
+  const { formatCurrency } = usePreferences();
+  const display = isCurrency ? formatCurrency(amount) : amount;
+  return <article className={`app-card metric-card accent-${accent}`}><div className="flex items-center justify-between gap-3"><p className="metric-label">{title}</p><span className="metric-orb" aria-hidden="true" /></div><h2 className={`metric-value ${color}`}>{display}</h2></article>;
 }
-
 export default SummaryCard;

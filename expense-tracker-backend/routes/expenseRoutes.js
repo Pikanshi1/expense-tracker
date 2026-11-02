@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 
 const protect = require("../middleware/authMiddleware");
+const upload = require("../middleware/uploadMiddleware");
 
 const {
     addExpense,
@@ -22,7 +23,7 @@ router.get("/export/csv", protect, exportCSV);
 router.get("/export/pdf", protect, exportPDF);
 router.get("/", protect, getExpenses);
 router.get("/:id", protect, getExpenseById);
-router.post("/", protect, addExpense);
+router.post("/", protect, upload.single("receipt"), addExpense);
 router.put("/:id", protect, updateExpense);
 router.delete("/:id", protect, deleteExpense);
 

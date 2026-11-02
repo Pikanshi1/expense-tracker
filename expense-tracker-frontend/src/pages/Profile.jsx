@@ -17,14 +17,13 @@ import {
   removeProfileImage,
 } from "../services/authService";
 import { useAuth } from "../context/AuthContext";
+import { usePreferences } from "../context/PreferencesContext";
 
 function Profile() {
   const { user, logout, updateUser } = useAuth();
+  const { formatCurrency } = usePreferences();
   const [isEditing, setIsEditing] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-  });
+  const [formData, setFormData] = useState(() => ({ name: user?.name || "", email: user?.email || "" }));
   const navigate = useNavigate();
   const [stats, setStats] = useState({
     transactions: 0,
@@ -37,7 +36,7 @@ function Profile() {
     favouriteCategory: "-",
   });
   const [preview, setPreview] = useState(
-    user?.profileImage ? `http://localhost:5000${user.profileImage}` : "",
+    user?.profileImage ? `${import.meta.env.VITE_API_URL?.replace(/\/api$/, "") || ""}${user.profileImage}` : "",
   );
 
   const [passwordData, setPasswordData] = useState({
@@ -49,82 +48,23 @@ function Profile() {
   const [showPasswordForm, setShowPasswordForm] = useState(false);
 
   useEffect(() => {
-    if (user) {
-      setFormData({
-        name: user.name,
-        email: user.email,
-      });
-    }
-  }, [user]);
-
-  useEffect(() => {
-    fetchStats();
+    let active = true;
+    getExpenses({ limit: 0 }).then(data => {
+      if (!active) return;
+      const expenses = data.expenses || [];
+      const income = expenses.filter(item => item.type === "Income").reduce((sum,item)=>sum+item.amount,0);
+      const expense = expenses.filter(item => item.type === "Expense").reduce((sum,item)=>sum+item.amount,0);
+      const expenseOnly = expenses.filter(item => item.type === "Expense");
+      const amounts = expenseOnly.map(item=>item.amount);
+      const categoryCount = {};
+      expenseOnly.forEach(item=>{categoryCount[item.category]=(categoryCount[item.category]||0)+1;});
+      const favouriteCategory = Object.keys(categoryCount).sort((a,b)=>categoryCount[b]-categoryCount[a])[0] || "-";
+      setStats({ transactions: expenses.length, income, expense, balance: income-expense, highestExpense: amounts.length?Math.max(...amounts):0, lowestExpense: amounts.length?Math.min(...amounts):0, averageExpense: amounts.length?amounts.reduce((a,b)=>a+b,0)/amounts.length:0, favouriteCategory });
+    }).catch(console.error);
+    return () => { active = false; };
   }, []);
 
-  const fetchStats = async () => {
-    try {
-      const data = await getExpenses();
 
-      const expenses = data.expenses;
-
-      const income = expenses
-        .filter((item) => item.type.toLowerCase() === "income")
-        .reduce((sum, item) => sum + item.amount, 0);
-
-      const expense = expenses
-        .filter((item) => item.type.toLowerCase() === "expense")
-        .reduce((sum, item) => sum + item.amount, 0);
-
-      const expenseOnly = expenses.filter(
-        (item) => item.type.toLowerCase() === "expense",
-      );
-
-      const highestExpense =
-        expenseOnly.length > 0
-          ? Math.max(...expenseOnly.map((e) => e.amount))
-          : 0;
-
-      const lowestExpense =
-        expenseOnly.length > 0
-          ? Math.min(...expenseOnly.map((e) => e.amount))
-          : 0;
-
-      const averageExpense =
-        expenseOnly.length > 0
-          ? (
-              expenseOnly.reduce((sum, e) => sum + e.amount, 0) /
-              expenseOnly.length
-            ).toFixed(2)
-          : 0;
-
-      // Favourite category
-      const categoryCount = {};
-
-      expenseOnly.forEach((item) => {
-        categoryCount[item.category] = (categoryCount[item.category] || 0) + 1;
-      });
-
-      const favouriteCategory =
-        Object.keys(categoryCount).length > 0
-          ? Object.keys(categoryCount).reduce((a, b) =>
-              categoryCount[a] > categoryCount[b] ? a : b,
-            )
-          : "-";
-
-      setStats({
-        transactions: expenses.length,
-        income,
-        expense,
-        balance: income - expense,
-        highestExpense,
-        lowestExpense,
-        averageExpense,
-        favouriteCategory,
-      });
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const handleLogout = () => {
     logout();
@@ -174,18 +114,11 @@ function Profile() {
     try {
       const data = await uploadProfileImage(file);
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...user,
-          profileImage: data.profileImage,
-        }),
-      );
-
-      window.location.reload();
-
+      const updated = { ...user, profileImage: data.profileImage };
+      updateUser(updated);
+      setPreview(`${import.meta.env.VITE_API_URL?.replace(/\/api$/, "") || ""}${data.profileImage}`);
       toast.success("Profile picture updated!");
-    } catch (error) {
+    } catch {
       toast.error("Upload failed");
     }
   };
@@ -194,20 +127,10 @@ function Profile() {
     try {
       await removeProfileImage();
 
-      localStorage.setItem(
-        "user",
-        JSON.stringify({
-          ...user,
-          profileImage: "",
-        }),
-      );
-
+      updateUser({ ...user, profileImage: "" });
       setPreview("");
-
       toast.success("Profile picture removed");
-
-      window.location.reload();
-    } catch (error) {
+    } catch {
       toast.error("Unable to remove image");
     }
   };
@@ -365,21 +288,21 @@ function Profile() {
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-500">Income</p>
           <h2 className="text-3xl font-bold text-green-600 mt-2">
-            ₹{stats.income}
+            {formatCurrency(stats.income)}
           </h2>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-500">Expenses</p>
           <h2 className="text-3xl font-bold text-red-600 mt-2">
-            ₹{stats.expense}
+            {formatCurrency(stats.expense)}
           </h2>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-500">Balance</p>
           <h2 className="text-3xl font-bold text-blue-600 mt-2">
-            ₹{stats.balance}
+            {formatCurrency(stats.balance)}
           </h2>
         </div>
       </div>
@@ -389,21 +312,21 @@ function Profile() {
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-500">Highest Expense</p>
           <h2 className="text-3xl font-bold text-red-600 mt-2">
-            ₹{stats.highestExpense}
+            {formatCurrency(stats.highestExpense)}
           </h2>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-500">Lowest Expense</p>
           <h2 className="text-3xl font-bold text-green-600 mt-2">
-            ₹{stats.lowestExpense}
+            {formatCurrency(stats.lowestExpense)}
           </h2>
         </div>
 
         <div className="bg-white rounded-lg shadow p-6">
           <p className="text-gray-500">Average Expense</p>
           <h2 className="text-3xl font-bold text-blue-600 mt-2">
-            ₹{stats.averageExpense}
+            {formatCurrency(stats.averageExpense)}
           </h2>
         </div>
 

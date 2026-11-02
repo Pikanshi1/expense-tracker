@@ -1,14 +1,20 @@
 # Password reset email setup
 
-Password reset emails are sent through Resend. Configure these environment variables in the backend deployment and in your local backend environment:
+Password reset emails use SMTP. Gmail accounts can use a Google app password; do not use the normal Gmail account password.
 
-| Variable | Purpose | Example format |
+| Variable | Purpose | Example |
 |---|---|---|
-| `RESEND_API_KEY` | Secret API key from your Resend account | `re_...` |
-| `EMAIL_FROM` | Sender address verified with Resend | `Expense Tracker <security@your-verified-domain.com>` |
+| `SMTP_HOST` | SMTP server hostname | `smtp.gmail.com` |
+| `SMTP_PORT` | SMTP server port | `465` |
+| `SMTP_SECURE` | Use TLS for the connection | `true` |
+| `EMAIL_USER` | Gmail address used to send mail | `your.address@gmail.com` |
+| `EMAIL_PASS` | 16-character Google app password | `xxxx xxxx xxxx xxxx` |
+| `EMAIL_FROM` | Sender shown in the email | `Expense Tracker <your.address@gmail.com>` |
 | `FRONTEND_URL` | Base URL of the deployed frontend | `https://your-frontend-domain.com` |
 
-Do not commit real API keys or email credentials to GitHub.
+Do not commit real app passwords, email credentials, or other secrets to GitHub.
+
+For Gmail, enable 2-Step Verification, create an app password under Google Account security, and put that generated password in `EMAIL_PASS`. `SMTP_USER` and `SMTP_APP_PASSWORD` are also accepted aliases.
 
 ## Flow and safeguards
 
@@ -18,4 +24,4 @@ Do not commit real API keys or email credentials to GitHub.
 - The forgot/reset endpoints are rate-limited.
 - Passwords are hashed with bcrypt before being saved.
 
-After setting the environment variables, deploy the backend and test the full flow with an email address you control. Confirm that the sender domain is verified in Resend and that the reset link opens the deployed frontend's `/reset-password/:token` route.
+After setting the environment variables, deploy the backend and test the full flow with an email address you control. Confirm that the reset link opens the deployed frontend's `/reset-password/:token` route.

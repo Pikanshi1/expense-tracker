@@ -9,23 +9,20 @@ import Last7DaysChart from "../components/Last7DaysChart";
 import { exportToPDF } from "../utils/exportPDF";
 import { exportToCSV } from "../utils/exportCSV";
 import { exportToExcel } from "../utils/exportExcel";
+import { usePreferences } from "../context/PreferencesContext";
 
 function Analytics() {
+  const { formatCurrency } = usePreferences();
   const [expenses, setExpenses] = useState([]);
   const [filter, setFilter] = useState("all");
 
   useEffect(() => {
-    fetchExpenses();
+    let active = true;
+    getExpenses({ limit: 0 }).then(data => {
+      if (active) setExpenses(data.expenses || []);
+    }).catch(console.error);
+    return () => { active = false; };
   }, []);
-
-  const fetchExpenses = async () => {
-    try {
-      const data = await getExpenses();
-      setExpenses(data.expenses);
-    } catch (error) {
-      console.error(error);
-    }
-  };
 
   const filteredExpenses = expenses.filter((expense) => {
     if (filter === "all") return true;
@@ -261,7 +258,7 @@ function Analytics() {
                 <span className="font-medium">{category.name}</span>
               </div>
 
-              <span className="font-bold text-blue-600">₹{category.value}</span>
+              <span className="font-bold text-blue-600">{formatCurrency(category.value)}</span>
             </div>
           ))}
         </div>

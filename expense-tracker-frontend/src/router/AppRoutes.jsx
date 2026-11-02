@@ -17,6 +17,8 @@ import Recurring from "../pages/Recurring";
 import Notifications from "../pages/Notifications";
 import Goals from "../pages/Goals";
 import Home from "../pages/Home";
+import Insights from "../pages/Insights";
+import Calendar from "../pages/Calendar";
 
 
 function AppRoutes() {
@@ -30,6 +32,9 @@ function AppRoutes() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgot-password" element={<ForgotPassword />} />
         <Route path="/reset-password/:token" element={<ResetPassword />} />
+
+        <Route path="/insights" element={<ProtectedRoute><Insights /></ProtectedRoute>} />
+        <Route path="/calendar" element={<ProtectedRoute><Calendar /></ProtectedRoute>} />
 
         <Route
           path="/dashboard"

@@ -6,8 +6,10 @@ import {
   deleteRecurring,
 } from "../services/recurringService";
 import { toast } from "react-toastify";
+import { usePreferences } from "../context/PreferencesContext";
 
 function Recurring() {
+  const { formatCurrency } = usePreferences();
   const [recurring, setRecurring] = useState([]);
 
   const [formData, setFormData] = useState({
@@ -22,14 +24,14 @@ function Recurring() {
     loadRecurring();
   }, []);
 
-  const loadRecurring = async () => {
+  async function loadRecurring() {
     try {
       const data = await getRecurring();
       setRecurring(data);
     } catch (error) {
       console.log(error);
     }
-  };
+  }
 
   const handleChange = (e) => {
     setFormData({
@@ -141,6 +143,7 @@ function Recurring() {
             <option>Weekly</option>
             <option>Monthly</option>
             <option>Yearly</option>
+            <option>Yearly</option>
           </select>
         </div>
 
@@ -182,7 +185,7 @@ function Recurring() {
                 <tr key={item._id} className="border-t">
                   <td className="p-4">{item.title}</td>
 
-                  <td className="p-4">₹{item.amount}</td>
+                  <td className="p-4">{formatCurrency(item.amount)}</td>
 
                   <td className="p-4">{item.category}</td>
 

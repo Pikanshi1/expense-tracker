@@ -12,8 +12,9 @@ function Register() {
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
   const password = watch("password", "");
 
-  const onSubmit = async ({ confirmPassword, ...data }) => {
+  const onSubmit = async (data) => {
     try {
+      delete data.confirmPassword;
       await registerUser(data);
       toast.success("Your account is ready. Please log in.");
       navigate("/login");

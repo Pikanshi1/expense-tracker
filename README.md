@@ -86,26 +86,6 @@ The application combines a responsive frontend with a RESTful backend and MongoD
 
 ---
 
-## 🖥️ Screenshots
-
-### 📊 Dashboard
-
-![Dashboard](screenshots/dashboard.png)
-
-### 💸 Expense Management
-
-![Expense Management](screenshots/expenses.png)
-
-### 💰 Budget Management
-
-![Budget Management](screenshots/budgets.png)
-
-### 🎯 Financial Goals
-
-![Financial Goals](screenshots/goals.png)
-
----
-
 ## 🛠️ Tech Stack
 
 ### Frontend
@@ -278,8 +258,15 @@ Create a `.env` file:
 
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
+MONGO_URL=your_mongodb_connection_string
 JWT_SECRET=your_jwt_secret
+FRONTEND_URL=http://localhost:5173
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+EMAIL_USER=your.gmail.address@gmail.com
+EMAIL_PASS=your-16-character-google-app-password
+EMAIL_FROM=Expense Tracker <your.gmail.address@gmail.com>
 ```
 
 Start the backend:
@@ -377,8 +364,15 @@ VITE_API_URL=http://localhost:5000/api
 
 ```env
 PORT=5000
-MONGO_URI=your_mongodb_connection_string
+MONGO_URL=your_mongodb_connection_string
 JWT_SECRET=your_secret_key
+FRONTEND_URL=http://localhost:5173
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=465
+SMTP_SECURE=true
+EMAIL_USER=your.gmail.address@gmail.com
+EMAIL_PASS=your-16-character-google-app-password
+EMAIL_FROM=Expense Tracker <your.gmail.address@gmail.com>
 ```
 
 > ⚠️ Never commit `.env` files or expose API keys, database credentials, or JWT secrets in your repository.

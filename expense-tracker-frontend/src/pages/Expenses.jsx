@@ -3,7 +3,6 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import ExpenseTable from "../components/ExpenseTable";
 import { getExpenses } from "../services/expenseService";
 import { deleteExpense } from "../services/expenseService";
-import { updateExpense } from "../services/expenseService";
 import DeleteModal from "../components/DeleteModal";
 import { exportToCSV } from "../utils/exportCSV";
 import { exportToPDF } from "../utils/exportPDF";
@@ -18,6 +17,9 @@ function Expenses() {
   const [category, setCategory] = useState("");
   const [type, setType] = useState("");
   const [sort, setSort] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [exportRows, setExportRows] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [deleteId, setDeleteId] = useState(null);
@@ -25,25 +27,29 @@ function Expenses() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    fetchExpenses();
-  }, [currentPage,search, category, type, sort]);
+    let active = true;
+    const load = async () => {
+      try {
+        const data = await getExpenses({ page: currentPage, limit: 10, search, category, type, sort, startDate, endDate });
+        if (!active) return;
+        setExpenses(data.expenses || []);
+        setTotalPages(data.totalPages || 1);
+        const all = await getExpenses({ limit: 0, search, category, type, sort, startDate, endDate });
+        if (active) setExportRows(all.expenses || []);
+      } catch (error) { console.error(error); }
+    };
+    load();
+    return () => { active = false; };
+  }, [currentPage, search, category, type, sort, startDate, endDate]);
 
-  const fetchExpenses = async () => {
-    try {
-      const data = await getExpenses({
-           page: currentPage,
-           limit: 10,
-           search,
-           category,
-           type,
-           sort,
-           });
-      setExpenses(data.expenses);
-      setTotalPages(data.totalPages);
-    } catch (error) {
-      console.error(error);
-    }
-  };
+  async function fetchExpenses() {
+    const params = { search, category, type, sort, startDate, endDate };
+    const [data, all] = await Promise.all([getExpenses({ ...params, page: currentPage, limit: 10 }), getExpenses({ ...params, limit: 0 })]);
+    setExpenses(data.expenses || []);
+    setTotalPages(data.totalPages || 1);
+    setExportRows(all.expenses || []);
+  }
+
 
   const handleEdit = (id) => {
   navigate(`/expenses/edit/${id}`);
@@ -63,7 +69,7 @@ function Expenses() {
 
     setShowDeleteModal(false);
     setDeleteId(null);
-     } catch (error) {
+     } catch {
     toast.error("Failed to delete expense");
     }
    };
@@ -90,13 +96,13 @@ function Expenses() {
         type="text"
         placeholder="Search by title..."
         value={search}
-        onChange={(e) => setSearch(e.target.value)}
+        onChange={(e) => { setCurrentPage(1); setSearch(e.target.value); }}
         className="border rounded-lg p-2 flex-1 min-w-45"
       />
 
       <select
         value={category}
-        onChange={(e) => setCategory(e.target.value)}
+        onChange={(e) => { setCurrentPage(1); setCategory(e.target.value); }}
         className="border rounded-lg p-2 flex-1 min-w-37.5"
       >
         <option value="">All Categories</option>
@@ -114,7 +120,7 @@ function Expenses() {
 
       <select
         value={type}
-        onChange={(e) => setType(e.target.value)}
+        onChange={(e) => { setCurrentPage(1); setType(e.target.value); }}
         className="border rounded-lg p-2 flex-1 min-w-37.5"
       >
         <option value="">All Types</option>
@@ -124,7 +130,7 @@ function Expenses() {
 
       <select
         value={sort}
-        onChange={(e) => setSort(e.target.value)}
+        onChange={(e) => { setCurrentPage(1); setSort(e.target.value); }}
         className="border rounded-lg p-2 flex-1 min-w-37.5"
       >
         <option value="">Newest</option>
@@ -132,24 +138,25 @@ function Expenses() {
         <option value="highest">Highest Amount</option>
         <option value="lowest">Lowest Amount</option>
       </select>
-
+      <input aria-label="Start date" type="date" value={startDate} onChange={e=>{setCurrentPage(1);setStartDate(e.target.value);}} className="border rounded-lg p-2" />
+      <input aria-label="End date" type="date" value={endDate} min={startDate || undefined} onChange={e=>{setCurrentPage(1);setEndDate(e.target.value);}} className="border rounded-lg p-2" />
       </div>
       <div className="flex flex-wrap gap-3 justify-end">
       <button
-         onClick={() => exportToCSV(expenses)}
+         onClick={() => exportToCSV(exportRows)}
          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
       >
          CSV
       </button>
 
       <button
-         onClick={() => exportToPDF(expenses)}
+         onClick={() => exportToPDF(exportRows)}
          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
       >
          PDF
       </button>
       <button
-        onClick={() => exportToExcel(expenses)}
+        onClick={() => exportToExcel(exportRows)}
         className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition"
         >
         Excel

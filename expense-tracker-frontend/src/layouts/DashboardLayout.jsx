@@ -1,62 +1,16 @@
 import { useState } from "react";
-import { FaBars } from "react-icons/fa";
+import { FaBars, FaTimes } from "react-icons/fa";
+import { useLocation } from "react-router-dom";
 import Navbar from "../components/Navbar";
 import Sidebar from "../components/Sidebar";
-
-function DashboardLayout({ children }) {
+import { usePreferences } from "../context/PreferencesContext";
+export default function DashboardLayout({ children }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  return (
-    <div className="flex min-h-screen items-stretch bg-gray-100">
-
-      {/* Desktop Sidebar */}
-      <div className="hidden md:flex">
-        <Sidebar />
-      </div>
-
-      {/* Mobile Sidebar */}
-      {sidebarOpen && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 bg-black/40 z-40 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-
-          {/* Sidebar Drawer */}
-          <div className="fixed top-0 left-0 z-50 h-screen md:hidden">
-            <Sidebar />
-          </div>
-        </>
-      )}
-
-      {/* Main Content */}
-      <div className="flex-1 flex flex-col min-w-0">
-
-        {/* Mobile Header */}
-        <div className="md:hidden bg-white shadow flex items-center px-4 py-3">
-          <button
-            onClick={() => setSidebarOpen(true)}
-            className="text-2xl"
-          >
-            <FaBars />
-          </button>
-
-          <h2 className="ml-4 text-xl font-bold text-blue-600">
-            Expense Tracker
-          </h2>
-        </div>
-
-        <Navbar />
-
-        <div className="p-4 md:p-8 min-w-0 overflow-x-hidden">
-          {children}
-        </div>
-
-      </div>
-
-    </div>
-  );
+  const location = useLocation();
+  const { theme } = usePreferences();
+  return <div className="app-shell" data-theme={theme}>
+    <div className="desktop-sidebar"><Sidebar/></div>
+    {sidebarOpen && <><button className="mobile-overlay" aria-label="Close navigation" onClick={()=>setSidebarOpen(false)}/><div className="mobile-drawer"><button className="drawer-close" onClick={()=>setSidebarOpen(false)} aria-label="Close navigation"><FaTimes/></button><Sidebar onNavigate={()=>setSidebarOpen(false)}/></div></>}
+    <div className="app-main"><div className="mobile-topbar"><button onClick={()=>setSidebarOpen(true)} aria-label="Open navigation"><FaBars/></button><strong>Expense<span>Tracker</span></strong></div><Navbar/><main key={location.pathname} className="app-content">{children}</main></div>
+  </div>;
 }
-
-export default DashboardLayout;

@@ -4,6 +4,7 @@ const PDFDocument = require("pdfkit");
 const Budget = require("../models/Budget");
 const { createNotification } = require("./notificationController");
 const Notification = require("../models/notification");
+const { evaluateAdaptiveNotifications } = require("./notificationController");
 
 const exportPDF = async (req, res) => {
   try {
@@ -133,10 +134,10 @@ const exportCSV = async (req, res) => {
 
 const addExpense = async (req, res) => {
   try {
-    const { title, amount, category, description, date, type } = req.body;
+    const { title, amount, category, description, notes, date, type } = req.body;
 
     // Validation
-    if (!title || !amount || !category || !type) {
+    if (!title?.trim() || !Number.isFinite(Number(amount)) || Number(amount) <= 0 || !category || !["Income", "Expense"].includes(type)) {
       return res.status(400).json({
         message: "Title, amount, category and type are required",
       });
@@ -149,7 +150,10 @@ const addExpense = async (req, res) => {
       category,
       type,
       description,
+      notes,
       date,
+      receiptUrl: req.file ? `/uploads/${req.file.filename}` : "",
+      location: req.body.location ? JSON.parse(req.body.location) : undefined,
       user: req.user.id,
     });
 
@@ -292,6 +296,7 @@ const addExpense = async (req, res) => {
           );
         }
       }
+      await evaluateAdaptiveNotifications(req.user.id, { changeType: type });
     }
 
     res.status(201).json({
@@ -352,10 +357,8 @@ const getExpenses = async (req, res) => {
 
     // Search by title
     if (search) {
-      query.title = {
-        $regex: search,
-        $options: "i",
-      };
+      const escapedSearch = String(search).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      query.title = { $regex: escapedSearch, $options: "i" };
     }
 
     // Filter by category
@@ -373,11 +376,15 @@ const getExpenses = async (req, res) => {
       query.date = {};
 
       if (startDate) {
-        query.date.$gte = new Date(startDate);
+        const start = new Date(startDate);
+        if (Number.isNaN(start.getTime())) return res.status(400).json({ message: "Invalid start date." });
+        query.date.$gte = start;
       }
-
       if (endDate) {
-        query.date.$lte = new Date(endDate);
+        const inclusiveEnd = new Date(endDate);
+        if (Number.isNaN(inclusiveEnd.getTime())) return res.status(400).json({ message: "Invalid end date." });
+        inclusiveEnd.setHours(23, 59, 59, 999);
+        query.date.$lte = inclusiveEnd;
       }
     }
 
@@ -397,22 +404,25 @@ const getExpenses = async (req, res) => {
     }
 
     // Pagination
-    const skip = (Number(page) - 1) * Number(limit);
+    const safePage = Math.max(1, Number.parseInt(page, 10) || 1);
+    const parsedLimit = Number.parseInt(limit, 10);
+    const requestedLimit = Number.isFinite(parsedLimit) ? parsedLimit : 10;
+    const safeLimit = requestedLimit === 0 ? 10000 : Math.min(100, Math.max(1, requestedLimit));
+    const skip = (safePage - 1) * safeLimit;
 
     const expenses = await Expense.find(query)
       .sort(sortOption)
       .skip(skip)
-      .limit(Number(limit));
+      .limit(safeLimit);
 
     const totalExpenses = await Expense.countDocuments(query);
 
     res.status(200).json({
-      currentPage: Number(page),
+      currentPage: safePage,
 
-      totalPages: Math.ceil(totalExpenses / Number(limit)),
+      totalPages: Math.ceil(totalExpenses / safeLimit),
 
       totalExpenses,
-
       expenses,
     });
   } catch (error) {
@@ -444,10 +454,13 @@ const updateExpense = async (req, res) => {
     }
 
     // Update the expense
-    const updatedExpense = await Expense.findByIdAndUpdate(id, req.body, {
-      new: true,
-      runValidators: true,
-    });
+    const allowedFields = ["title", "amount", "type", "category", "description", "notes", "date", "location"];
+    const updates = Object.fromEntries(Object.entries(req.body).filter(([key]) => allowedFields.includes(key)));
+    if (updates.amount !== undefined && (!Number.isFinite(Number(updates.amount)) || Number(updates.amount) <= 0)) {
+      return res.status(400).json({ message: "Amount must be greater than zero." });
+    }
+    const updatedExpense = await Expense.findOneAndUpdate({ _id: id, user: req.user.id }, updates, { new: true, runValidators: true });
+    await evaluateAdaptiveNotifications(req.user.id, { changeType: updates.type || expense.type });
 
     res.status(200).json({
       message: "Expense updated successfully",
@@ -480,6 +493,7 @@ const deleteExpense = async (req, res) => {
 
     // Delete expense
     await Expense.findByIdAndDelete(req.params.id);
+    await evaluateAdaptiveNotifications(req.user.id, { changeType: expense.type });
 
     res.status(200).json({
       message: "Expense deleted successfully",
@@ -571,18 +585,14 @@ const getAnalytics = async (req, res) => {
 
     expenses.forEach((expense) => {
       if (expense.type === "Expense") {
-        const month = new Date(expense.date).toLocaleString("default", {
-          month: "short",
-        });
-
-        monthMap[month] = (monthMap[month] || 0) + expense.amount;
+        const date = new Date(expense.date);
+        const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}`;
+        const month = date.toLocaleString("default", { month: "short", year: "numeric" });
+        monthMap[key] = { month, total: (monthMap[key]?.total || 0) + expense.amount };
       }
     });
 
-    const monthlyExpenses = Object.keys(monthMap).map((month) => ({
-      month,
-      total: monthMap[month],
-    }));
+    const monthlyExpenses = Object.keys(monthMap).sort().map((key) => monthMap[key]);
 
     const recentTransactions = expenses
       .sort((a, b) => b.date - a.date)

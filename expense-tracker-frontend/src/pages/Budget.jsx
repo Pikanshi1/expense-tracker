@@ -4,15 +4,21 @@ import {
   getBudgets,
   saveBudget,
   deleteBudget,
+  getAdaptiveBudget,
+  saveAdaptiveBudget,
 } from "../services/budgetService";
 import { getExpenses } from "../services/expenseService";
 import { toast } from "react-toastify";
 import SummaryCard from "../components/SummaryCard";
+import { usePreferences } from "../context/PreferencesContext";
 
 function Budget() {
+  const { formatCurrency } = usePreferences();
   const [budgets, setBudgets] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [editingCategory, setEditingCategory] = useState("");
+  const [adaptive, setAdaptive] = useState(null);
+  const [adaptiveForm, setAdaptiveForm] = useState({ monthlyBudget: "", dailyBudget: "", includeAdditionalIncome: false, notificationsEnabled: true, notificationTime: "09:00" });
 
   const categories = [
     "Food",
@@ -22,7 +28,6 @@ function Budget() {
     "Entertainment",
     "Education",
     "Health",
-    "Salary",
     "Other",
   ];
 
@@ -30,15 +35,30 @@ function Budget() {
     fetchData();
   }, []);
 
-  const fetchData = async () => {
+  async function fetchData() {
     try {
       const budgetData = await getBudgets();
-      const expenseData = await getExpenses();
+      const expenseData = await getExpenses({ limit: 0 });
+      const adaptiveData = await getAdaptiveBudget();
 
       setBudgets(budgetData);
-      setExpenses(expenseData.expenses);
+      setExpenses(expenseData.expenses || []);
+      setAdaptive(adaptiveData);
+      if (adaptiveData.settings) setAdaptiveForm({ monthlyBudget: adaptiveData.monthlyBudget, dailyBudget: adaptiveData.dailyBudget ?? "", ...adaptiveData.settings });
     } catch (error) {
       console.log(error);
+    }
+
+  }
+
+  const handleAdaptiveSave = async (event) => {
+    event.preventDefault();
+    try {
+      const result = await saveAdaptiveBudget(adaptiveForm);
+      setAdaptive(result.calculation);
+      toast.success("Adaptive budget saved");
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Unable to save adaptive budget");
     }
   };
 
@@ -59,7 +79,7 @@ function Budget() {
   const handleSave = async (category) => {
     const budget = budgets.find((b) => b.category === category);
 
-    if (!budget || budget.amount === "" || budget.amount == null) {
+    if (!budget || budget.amount === "" || budget.amount == null || !Number.isFinite(Number(budget.amount)) || Number(budget.amount) <= 0) {
       toast.error("Please enter a budget amount");
       return;
     }
@@ -86,15 +106,33 @@ function Budget() {
     0,
   );
 
-  const totalSpent = expenses
-    .filter((expense) => expense.type.toLowerCase() === "expense")
-    .reduce((sum, expense) => sum + expense.amount, 0);
+  const now = new Date();
+  const thisMonthExpenses = expenses.filter((expense) => {
+    const date = new Date(expense.date);
+    return expense.type === "Expense" && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+  });
+  const totalSpent = thisMonthExpenses.reduce((sum, expense) => sum + Number(expense.amount || 0), 0);
 
   const remaining = totalBudget - totalSpent;
 
   return (
     <DashboardLayout>
-      <h1 className="text-3xl font-bold mb-8">Monthly Budget</h1>
+      <h1 className="text-3xl font-bold mb-8">Total & Category Budgets</h1>
+
+      <form onSubmit={handleAdaptiveSave} className="app-card mb-8">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div><p className="eyebrow">ADAPTIVE DAILY BUDGET</p><h2 className="text-2xl font-bold">Make every day count</h2><p className="muted-copy mt-1">Your allowance recalculates whenever transactions change.</p></div>
+          <div className="text-right"><p className="muted-copy text-sm">Today's allowance</p><strong className="text-2xl text-emerald-500">{formatCurrency(adaptive?.dailyAllowance || 0)}</strong></div>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-5">
+          <label className="text-sm font-semibold">Total monthly budget<input aria-label="Total monthly budget" className="w-full border rounded-xl p-3 mt-2" type="number" min="0" step="0.01" value={adaptiveForm.monthlyBudget} onChange={(e) => setAdaptiveForm({ ...adaptiveForm, monthlyBudget: e.target.value })} placeholder="Enter your total budget" required /></label>
+          <label className="text-sm font-semibold">Daily budget<input aria-label="Daily budget" className="w-full border rounded-xl p-3 mt-2" type="number" min="0" step="0.01" value={adaptiveForm.dailyBudget} onChange={(e) => setAdaptiveForm({ ...adaptiveForm, dailyBudget: e.target.value })} placeholder={adaptive?.dailyAllowance ? `Calculated: ${Math.round(adaptive.dailyAllowance)}` : "Optional override"} /><span className="muted-copy block text-xs mt-1">Leave blank to use the calculated allowance.</span></label>
+          <label className="text-sm font-semibold">Daily notification time<input className="w-full border rounded-xl p-3 mt-2" type="time" value={adaptiveForm.notificationTime} onChange={(e) => setAdaptiveForm({ ...adaptiveForm, notificationTime: e.target.value })} /></label>
+          <label className="flex items-center gap-2 mt-7 text-sm"><input type="checkbox" checked={adaptiveForm.includeAdditionalIncome} onChange={(e) => setAdaptiveForm({ ...adaptiveForm, includeAdditionalIncome: e.target.checked })} /> Include Additional Income in Spending Budget</label>
+        </div>
+        <div className="flex flex-wrap gap-5 mt-5 text-sm muted-copy"><span>Spent today: {formatCurrency(adaptive?.spentToday || 0)}</span><span>Remaining today: {formatCurrency(adaptive?.remainingAllowance || 0)}</span><span>Monthly remaining: {formatCurrency(adaptive?.remainingMonthlyBudget || 0)}</span><span>{Math.round(adaptive?.percentageUsed || 0)}% used</span></div>
+        <button className="gradient-button mt-5" type="submit">Save adaptive budget</button>
+      </form>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <SummaryCard
@@ -133,7 +171,7 @@ function Budget() {
           const spent = expenses
             .filter(
               (e) =>
-                e.category === category && e.type.toLowerCase() === "expense",
+                e.category === category && e.type === "Expense" && new Date(e.date).getMonth() === now.getMonth() && new Date(e.date).getFullYear() === now.getFullYear(),
             )
             .reduce((sum, e) => sum + e.amount, 0);
 
@@ -168,14 +206,14 @@ function Budget() {
                   )}
 
                   <p className="text-gray-500 mt-1">
-                    ₹{spent} / ₹{budget || 0}
+                    {formatCurrency(spent)} / {formatCurrency(budget || 0)}
                   </p>
                   <p
                     className={`font-medium mt-1 ${
                       budget - spent >= 0 ? "text-green-600" : "text-red-600"
                     }`}
                   >
-                    Remaining ₹{(budget || 0) - spent}
+                    Remaining {formatCurrency((budget || 0) - spent)}
                   </p>
                 </div>
 
@@ -191,7 +229,7 @@ function Budget() {
                       className="border rounded-lg px-4 py-2 w-32"
                     />
                   ) : (
-                    <h2 className="text-xl font-bold">₹{budget || 0}</h2>
+                    <h2 className="text-xl font-bold">{formatCurrency(budget || 0)}</h2>
                   )}
                   {editingCategory === category ? (
                     <button

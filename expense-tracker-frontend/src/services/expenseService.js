@@ -10,10 +10,8 @@ export const getExpenses = async (params = {}) => {
 
 export const addExpense = async (expenseData) => {
 
-    const response = await api.post(
-        "/expenses",
-        expenseData
-    );
+    const isFormData = typeof FormData !== "undefined" && expenseData instanceof FormData;
+    const response = await api.post("/expenses", expenseData, isFormData ? { headers: { "Content-Type": "multipart/form-data" } } : undefined);
 
     return response.data;
 };

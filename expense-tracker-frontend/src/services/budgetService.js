@@ -5,6 +5,21 @@ export const getBudgets = async () => {
   return response.data;
 };
 
+export const getAdaptiveBudget = async () => {
+  const response = await api.get("/budgets/adaptive", {
+    params: { timezone: Intl.DateTimeFormat().resolvedOptions().timeZone },
+  });
+  return response.data;
+};
+
+export const saveAdaptiveBudget = async (settings) => {
+  const response = await api.put("/budgets/adaptive", {
+    ...settings,
+    timezone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+  });
+  return response.data;
+};
+
 export const saveBudget = async (budget) => {
   const response = await api.post("/budgets", budget);
   return response.data;

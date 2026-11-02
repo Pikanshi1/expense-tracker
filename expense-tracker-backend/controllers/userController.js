@@ -291,7 +291,9 @@ const forgotPassword = async (req, res) => {
       return res.status(400).json({ message: "Email is required" });
     }
 
-    if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM || !process.env.FRONTEND_URL) {
+    const emailUser = process.env.SMTP_USER || process.env.EMAIL_USER;
+    const emailPassword = process.env.SMTP_APP_PASSWORD || process.env.EMAIL_PASS;
+    if (!emailUser || !emailPassword || !process.env.FRONTEND_URL) {
       return res.status(503).json({ message: "Password reset is temporarily unavailable. Please try again later." });
     }
 
@@ -374,4 +376,3 @@ module.exports = {
     uploadProfileImage,
     removeProfileImage,
 };
-

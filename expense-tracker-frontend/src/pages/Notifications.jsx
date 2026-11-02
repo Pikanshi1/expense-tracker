@@ -12,16 +12,14 @@ function Notifications() {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    fetchNotifications();
+    let active = true;
+    getNotifications().then(data => { if (active) setNotifications(data); }).catch(console.error);
+    return () => { active = false; };
   }, []);
 
   const fetchNotifications = async () => {
-    try {
-      const data = await getNotifications();
-      setNotifications(data);
-    } catch (error) {
-      console.log(error);
-    }
+    try { const data = await getNotifications(); setNotifications(data); }
+    catch (error) { console.error(error); }
   };
 
   const handleRead = async (id) => {

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "node --check server.js && node --check utils/sendPasswordResetEmail.js && node --test test/adaptiveBudget.test.js",
     "dev": "nodemon server.js",
     "start": "node server.js"
   },
@@ -22,7 +22,11 @@
     "jsonwebtoken": "^9.0.3",
     "mongoose": "^9.7.4",
     "multer": "^2.2.0",
+    "nodemailer": "^10.3.1",
     "pdfkit": "^0.19.1"
+  },
+  "engines": {
+    "node": ">=20"
   },
   "devDependencies": {
     "nodemon": "^3.1.14"
