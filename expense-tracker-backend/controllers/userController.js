@@ -130,10 +130,6 @@ const updateProfile = async (req, res) => {
   try {
     const { name, email } = req.body;
 
-    if (String(newPassword).length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
-      return res.status(400).json({ message: "New password must be at least 8 characters and include an uppercase letter and a number" });
-    }
-
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -237,6 +233,10 @@ const changePassword = async (req, res) => {
       return res.status(400).json({
         message: "All fields are required",
       });
+    }
+
+    if (String(newPassword).length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "New password must be at least 8 characters and include an uppercase letter and a number" });
     }
 
     const user = await User.findById(req.user.id);
