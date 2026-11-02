@@ -43,6 +43,7 @@ const features = [
     title: "Keep receipts organized",
     text: "Bring receipt scanning into your workflow and review extracted details before saving a transaction.",
     tone: "amber",
+    status: "COMING SOON",
   },
   {
     icon: <FaMapMarkedAlt />,
@@ -50,6 +51,7 @@ const features = [
     title: "See spending by place",
     text: "Optionally attach a place to an expense and explore where your spending happens.",
     tone: "rose",
+    status: "COMING SOON",
   },
   {
     icon: <FaShieldAlt />,
@@ -178,7 +180,7 @@ function DashboardPreview() {
           </div>
         </div>
       </div>
-      <div className="visual-caption"><span /> A clearer view of your everyday finances</div>
+      <div className="visual-caption"><span /> Product preview with illustrative values</div>
     </div>
   );
 }
@@ -204,6 +206,7 @@ function Home() {
 
   return (
     <main className="home-shell" data-theme={theme}>
+      <div className="page-load-line" aria-hidden="true" />
       <nav className="landing-nav">
         <Link to="/" className="brand-mark" aria-label="Expense Tracker home">
           <span className="brand-symbol"><FaChartLine /></span>
@@ -262,7 +265,7 @@ function Home() {
         <div className="feature-grid">
           {features.map((feature, index) => (
             <article className={`feature-card tone-${feature.tone}`} data-reveal key={feature.title} style={{ "--reveal-delay": `${index * 75}ms` }}>
-              <div className="feature-card-top"><span className="feature-icon">{feature.icon}</span><span className="feature-index">0{index + 1}</span></div>
+              <div className="feature-card-top"><span className="feature-icon">{feature.icon}</span><span className="feature-index">{feature.status || `0${index + 1}`}</span></div>
               <span className="feature-eyebrow">{feature.eyebrow}</span>
               <h3>{feature.title}</h3>
               <p>{feature.text}</p>
@@ -292,7 +295,7 @@ function Home() {
           <p>Start with a clearer picture. Build from there.</p>
           <Link to="/register" className="button-light">Create your free account <FaArrowRight /></Link>
         </div>
-        <div className="cta-decoration" aria-hidden="true"><div className="cta-card"><span>expensewise</span><b>Clarity<br />looks good<br />on you.</b><i><FaChartLine /></i></div></div>
+        <div className="cta-decoration" aria-hidden="true"><div className="cta-card"><span>Expense<span>Tracker</span></span><b>Clarity<br />looks good<br />on you.</b><i><FaChartLine /></i></div></div>
       </section>
 
       <footer className="landing-footer">
