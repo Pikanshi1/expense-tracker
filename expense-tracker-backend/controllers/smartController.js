@@ -1,5 +1,7 @@
 const Expense = require("../models/expense");
 const Budget = require("../models/Budget");
+const AdaptiveBudget = require("../models/AdaptiveBudget");
+const { calculateAdaptiveBudget } = require("../services/adaptiveBudgetService");
 
 const getInsights = async (req, res) => {
   try {
@@ -55,4 +57,47 @@ const getExchangeRates = async (req, res) => {
   } catch (error) { return res.status(502).json({ message: "Unable to retrieve exchange rates." }); }
 };
 
-module.exports = { getInsights, getExchangeRates };
+const askBudgetAdvice = async (req, res) => {
+  try {
+    const question = typeof req.body.question === "string" ? req.body.question.trim() : "";
+    if (!question || question.length > 500) return res.status(400).json({ message: "Ask a budget question up to 500 characters." });
+
+    const [adaptive, budgets, expenses] = await Promise.all([
+      calculateAdaptiveBudget(req.user.id, { timezone: req.body.timezone || "UTC" }),
+      Budget.find({ user: req.user.id, month: new Date().getMonth(), year: new Date().getFullYear() }).select("category amount").lean(),
+      Expense.find({ user: req.user.id }).select("amount type category date").sort({ date: -1 }).limit(5000).lean(),
+    ]);
+    const categoryTotals = {};
+    expenses.filter((item) => item.type === "Expense").forEach((item) => {
+      categoryTotals[item.category] = (categoryTotals[item.category] || 0) + Number(item.amount);
+    });
+    const context = { question, adaptiveBudget: adaptive, categoryBudgets: budgets, categorySpending: categoryTotals };
+    if (!process.env.GROQ_API_KEY) {
+      return res.json({
+        answer: "AI advice is not configured yet. Review your highest spending category, compare it with its budget, and consider lowering discretionary spending when your daily allowance is nearly used.",
+        aiEnabled: false,
+        context,
+      });
+    }
+    const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.GROQ_API_KEY}` },
+      body: JSON.stringify({
+        model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+        temperature: 0.2,
+        max_tokens: 450,
+        messages: [
+          { role: "system", content: "Give cautious, practical budget-improvement guidance using only the supplied financial data. Do not invent values, recommend investments, or request sensitive information. Mention when the data is insufficient." },
+          { role: "user", content: JSON.stringify(context) },
+        ],
+      }),
+    });
+    if (!response.ok) return res.status(502).json({ message: "The AI budget adviser is temporarily unavailable." });
+    const data = await response.json();
+    return res.json({ answer: data.choices?.[0]?.message?.content || "No advice was returned.", aiEnabled: true, context });
+  } catch (error) {
+    return res.status(500).json({ message: "Unable to get budget advice." });
+  }
+};
+
+module.exports = { getInsights, getExchangeRates, askBudgetAdvice };

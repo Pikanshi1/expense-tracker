@@ -11,6 +11,7 @@ import { getExpenses } from "../services/expenseService";
 import { toast } from "react-toastify";
 import SummaryCard from "../components/SummaryCard";
 import { usePreferences } from "../context/PreferencesContext";
+import { askBudgetAdvice } from "../services/smartService";
 
 function Budget() {
   const { formatCurrency } = usePreferences();
@@ -19,6 +20,10 @@ function Budget() {
   const [editingCategory, setEditingCategory] = useState("");
   const [adaptive, setAdaptive] = useState(null);
   const [adaptiveForm, setAdaptiveForm] = useState({ monthlyBudget: "", dailyBudget: "", includeAdditionalIncome: false, notificationsEnabled: true, notificationTime: "09:00" });
+  const [budgetQuestion, setBudgetQuestion] = useState("");
+  const [budgetAdvice, setBudgetAdvice] = useState("");
+  const [askingAdvice, setAskingAdvice] = useState(false);
+  const [adviceError, setAdviceError] = useState("");
 
   const categories = [
     "Food",
@@ -59,6 +64,21 @@ function Budget() {
       toast.success("Adaptive budget saved");
     } catch (error) {
       toast.error(error.response?.data?.message || "Unable to save adaptive budget");
+    }
+  };
+
+  const handleAskBudgetAdvice = async (event) => {
+    event.preventDefault();
+    if (!budgetQuestion.trim()) return;
+    setAskingAdvice(true);
+    setAdviceError("");
+    try {
+      const result = await askBudgetAdvice(budgetQuestion);
+      setBudgetAdvice(result.answer);
+    } catch (error) {
+      setAdviceError(error.response?.data?.message || "Unable to get budget advice.");
+    } finally {
+      setAskingAdvice(false);
     }
   };
 
@@ -133,6 +153,18 @@ function Budget() {
         <div className="flex flex-wrap gap-5 mt-5 text-sm muted-copy"><span>Spent today: {formatCurrency(adaptive?.spentToday || 0)}</span><span>Remaining today: {formatCurrency(adaptive?.remainingAllowance || 0)}</span><span>Monthly remaining: {formatCurrency(adaptive?.remainingMonthlyBudget || 0)}</span><span>{Math.round(adaptive?.percentageUsed || 0)}% used</span></div>
         <button className="gradient-button mt-5" type="submit">Save adaptive budget</button>
       </form>
+
+      <section className="app-card mb-8">
+        <p className="eyebrow">ASK AI ABOUT YOUR BUDGET</p>
+        <h2 className="text-2xl font-bold">Find ways to improve your plan</h2>
+        <p className="muted-copy mt-1">Ask about your allowance, spending categories, or how to stay within this month's budget.</p>
+        <form onSubmit={handleAskBudgetAdvice} className="flex flex-col sm:flex-row gap-3 mt-5">
+          <input value={budgetQuestion} onChange={(event) => setBudgetQuestion(event.target.value)} maxLength={500} placeholder="How can I reduce my spending this month?" className="flex-1 border rounded-xl p-3" aria-label="Ask AI about your budget" />
+          <button type="submit" className="gradient-button" disabled={askingAdvice || !budgetQuestion.trim()}>{askingAdvice ? "Thinking…" : "Ask AI"}</button>
+        </form>
+        {adviceError && <p className="text-rose-500 mt-3">{adviceError}</p>}
+        {budgetAdvice && <div className="mt-5 rounded-xl border border-blue-200 bg-blue-50 p-4"><p className="font-semibold text-blue-800">Budget improvement suggestion</p><p className="mt-2 whitespace-pre-wrap text-gray-700">{budgetAdvice}</p></div>}
+      </section>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
         <SummaryCard
