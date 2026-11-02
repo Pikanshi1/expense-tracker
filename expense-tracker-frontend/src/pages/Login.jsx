@@ -29,7 +29,7 @@ function Login() {
       <div className="auth-decoration auth-decoration-two" />
       <Link to="/" className="auth-brand">
         <span className="auth-brand-icon"><FaChartLine /></span>
-        <span>expense<span>wise</span></span>
+        <span>Expense<span>Tracker</span></span>
       </Link>
 
       <section className="auth-layout">
