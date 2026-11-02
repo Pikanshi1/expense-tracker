@@ -210,7 +210,7 @@ function Home() {
       <nav className="landing-nav">
         <Link to="/" className="brand-mark" aria-label="Expense Tracker home">
           <span className="brand-symbol"><FaChartLine /></span>
-          <span>Expense<span>Tracker</span></span>
+          <span>Expense <span>Tracker</span></span>
         </Link>
         <div className="nav-links">
           <a href="#features">Features</a>
@@ -295,11 +295,11 @@ function Home() {
           <p>Start with a clearer picture. Build from there.</p>
           <Link to="/register" className="button-light">Create your free account <FaArrowRight /></Link>
         </div>
-        <div className="cta-decoration" aria-hidden="true"><div className="cta-card"><span>Expense<span>Tracker</span></span><b>Clarity<br />looks good<br />on you.</b><i><FaChartLine /></i></div></div>
+        <div className="cta-decoration" aria-hidden="true"><div className="cta-card"><span>Expense <span>Tracker</span></span><b>Clarity<br />looks good<br />on you.</b><i><FaChartLine /></i></div></div>
       </section>
 
       <footer className="landing-footer">
-        <Link to="/" className="brand-mark"><span className="brand-symbol"><FaChartLine /></span><span>Expense<span>Tracker</span></span></Link>
+        <Link to="/" className="brand-mark"><span className="brand-symbol"><FaChartLine /></span><span>Expense <span>Tracker</span></span></Link>
         <p>Make every rupee count.</p>
         <div><Link to="/login">Log in</Link><Link to="/register">Create account</Link><a href="#features">Features</a></div>
         <small>© {new Date().getFullYear()} Expensewise. Built for clearer everyday finances.</small>
