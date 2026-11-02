@@ -499,3 +499,21 @@ body {
 @media (prefers-reduced-motion: reduce) {
   .auth-story, .auth-form-panel, .auth-story-card { animation: none !important; }
 }
+
+
+.auth-layout-single { width: min(480px, 100%); grid-template-columns: 1fr; gap: 0; }
+.auth-standalone-panel { padding: 40px; }
+.auth-icon-large {
+  width: 48px; height: 48px; display: grid; place-items: center; margin-bottom: 22px;
+  border-radius: 15px; color: #5276e2; background: #eaf0ff; font-size: 18px;
+}
+.auth-back-link {
+  display: flex; justify-content: center; align-items: center; gap: 8px; margin-top: 25px;
+  color: #71809c; text-decoration: none; font-size: 11px; font-weight: 750;
+  transition: color .2s ease;
+}
+.auth-back-link:hover { color: #456bd9; }
+.auth-resend { margin-top: 25px; }
+@media (max-width: 700px) {
+  .auth-standalone-panel { padding: 30px 22px; }
+}
