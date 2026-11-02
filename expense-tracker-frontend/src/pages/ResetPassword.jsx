@@ -53,7 +53,7 @@ function ResetPassword() {
           <Link to="/login" className="auth-back-link">Back to login</Link>
         </section>
       </section>
-      <footer className="auth-copyright">© {new Date().getFullYear()} Expensewise. Make every rupee count.</footer>
+      <footer className="auth-copyright">© {new Date().getFullYear()} Expense Tracker. Make every rupee count.</footer>
     </main>
   );
 }
