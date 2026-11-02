@@ -23,7 +23,7 @@ function ForgotPassword() {
     <main className="auth-page">
       <div className="auth-decoration auth-decoration-one" />
       <div className="auth-decoration auth-decoration-two" />
-      <Link to="/" className="auth-brand"><span className="auth-brand-icon"><FaChartLine /></span><span>Expense<span>Tracker</span></span></Link>
+      <Link to="/" className="auth-brand"><span className="auth-brand-icon"><FaChartLine /></span><span>Expense <span>Tracker</span></span></Link>
       <section className="auth-layout auth-layout-single">
         <section className="auth-form-panel auth-standalone-panel">
           <div className="auth-icon-large"><FaEnvelope /></div>
