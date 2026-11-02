@@ -314,7 +314,7 @@ const forgotPassword = async (req, res) => {
         user.passwordResetTokenHash = null;
         user.passwordResetExpires = null;
         await user.save();
-        throw emailError;
+        console.error("Password reset email delivery failed:", emailError.message);
       }
     }
 
