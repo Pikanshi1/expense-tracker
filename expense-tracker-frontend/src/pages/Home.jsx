@@ -210,7 +210,7 @@ function Home() {
       <nav className="landing-nav">
         <Link to="/" className="brand-mark" aria-label="Expense Tracker home">
           <span className="brand-symbol"><FaChartLine /></span>
-          <span>expense<span>wise</span></span>
+          <span>Expense<span>Tracker</span></span>
         </Link>
         <div className="nav-links">
           <a href="#features">Features</a>
@@ -299,7 +299,7 @@ function Home() {
       </section>
 
       <footer className="landing-footer">
-        <Link to="/" className="brand-mark"><span className="brand-symbol"><FaChartLine /></span><span>expense<span>wise</span></span></Link>
+        <Link to="/" className="brand-mark"><span className="brand-symbol"><FaChartLine /></span><span>Expense<span>Tracker</span></span></Link>
         <p>Make every rupee count.</p>
         <div><Link to="/login">Log in</Link><Link to="/register">Create account</Link><a href="#features">Features</a></div>
         <small>© {new Date().getFullYear()} Expensewise. Built for clearer everyday finances.</small>
