@@ -29,7 +29,7 @@ function Login() {
       <div className="auth-decoration auth-decoration-two" />
       <Link to="/" className="auth-brand">
         <span className="auth-brand-icon"><FaChartLine /></span>
-        <span>expense<span>wise</span></span>
+        <span>Expense <span>Tracker</span></span>
       </Link>
 
       <section className="auth-layout">
@@ -68,11 +68,11 @@ function Login() {
             <button type="submit" disabled={isSubmitting} className="auth-submit">{isSubmitting ? "Signing you in..." : "Log in to your account"} <FaArrowRight /></button>
           </form>
 
-          <div className="auth-form-footer"><span>New to Expensewise?</span> <Link to="/register">Create an account</Link></div>
+          <div className="auth-form-footer"><span>New to Expense Tracker?</span> <Link to="/register">Create an account</Link></div>
           <div className="auth-secure-note"><FaShieldAlt /> Your account is protected with secure authentication.</div>
         </section>
       </section>
-      <footer className="auth-copyright">© {new Date().getFullYear()} Expensewise. Make every rupee count.</footer>
+      <footer className="auth-copyright">© {new Date().getFullYear()} Expense Tracker. Make every rupee count.</footer>
     </main>
   );
 }

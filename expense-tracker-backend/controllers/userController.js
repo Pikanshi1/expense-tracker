@@ -2,22 +2,29 @@ const User = require("../models/user");
 const bcrypt = require("bcrypt");
 const generateToken = require("../utils/generateToken");
 const { createNotification } = require("./notificationController");
+const crypto = require("crypto");
+const sendPasswordResetEmail = require("../utils/sendPasswordResetEmail");
 
 
 const registerUser = async (req, res) => {
     try {
 
         const { name, email, password } = req.body;
+        const normalizedEmail = String(email || "").trim().toLowerCase();
 
         // Validation
-        if (!name || !email || !password) {
+        if (!name || !normalizedEmail || !password) {
             return res.status(400).json({
                 message: "All fields are required"
             });
         }
 
         // Check if email already exists
-        const existingUser = await User.findOne({ email });
+        if (String(password).length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+            return res.status(400).json({ message: "Password must be at least 8 characters and include an uppercase letter and a number" });
+        }
+
+        const existingUser = await User.findOne({ email: normalizedEmail });
 
         if (existingUser) {
             return res.status(400).json({
@@ -31,7 +38,7 @@ const registerUser = async (req, res) => {
         // Create user
         const user = new User({
             name,
-            email,
+            email: normalizedEmail,
             password: hashedPassword
         });
 
@@ -58,8 +65,13 @@ const loginUser = async (req, res) => {
 
         const { email, password } = req.body;
 
+        if (!email || !password) {
+            return res.status(400).json({ message: "Email and password are required" });
+        }
+
         // Find user
-        const user = await User.findOne({ email });
+        const normalizedEmail = String(email).trim().toLowerCase();
+        const user = await User.findOne({ email: normalizedEmail });
 
         if (!user) {
             return res.status(400).json({
@@ -223,6 +235,10 @@ const changePassword = async (req, res) => {
       });
     }
 
+    if (String(newPassword).length < 8 || !/[A-Z]/.test(newPassword) || !/[0-9]/.test(newPassword)) {
+      return res.status(400).json({ message: "New password must be at least 8 characters and include an uppercase letter and a number" });
+    }
+
     const user = await User.findById(req.user.id);
 
     if (!user) {
@@ -266,9 +282,93 @@ const changePassword = async (req, res) => {
 };
 
 
+
+const forgotPassword = async (req, res) => {
+  try {
+    const email = String(req.body.email || "").trim().toLowerCase();
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    if (!process.env.RESEND_API_KEY || !process.env.EMAIL_FROM || !process.env.FRONTEND_URL) {
+      return res.status(503).json({ message: "Password reset is temporarily unavailable. Please try again later." });
+    }
+
+    const user = await User.findOne({ email });
+
+    if (user) {
+      const resetToken = crypto.randomBytes(32).toString("hex");
+      const tokenHash = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+      user.passwordResetTokenHash = tokenHash;
+      user.passwordResetExpires = new Date(Date.now() + 15 * 60 * 1000);
+      await user.save();
+
+      const frontendUrl = process.env.FRONTEND_URL.endsWith("/") ? process.env.FRONTEND_URL.slice(0, -1) : process.env.FRONTEND_URL;
+      const resetUrl = `${frontendUrl}/reset-password/${resetToken}`;
+
+      try {
+        await sendPasswordResetEmail(user.email, resetUrl);
+      } catch (emailError) {
+        user.passwordResetTokenHash = null;
+        user.passwordResetExpires = null;
+        await user.save();
+        console.error("Password reset email delivery failed:", emailError.message);
+      }
+    }
+
+    return res.status(200).json({
+      message: "If an account exists for that email, a password reset link has been sent."
+    });
+  } catch (error) {
+    console.error("Forgot password error:", error.message);
+    return res.status(500).json({ message: "Unable to process your request right now." });
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ message: "A reset token and new password are required" });
+    }
+
+    if (String(password).length < 8 || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+      return res.status(400).json({
+        message: "Password must be at least 8 characters and include an uppercase letter and a number"
+      });
+    }
+
+    const tokenHash = crypto.createHash("sha256").update(token).digest("hex");
+    const user = await User.findOne({
+      passwordResetTokenHash: tokenHash,
+      passwordResetExpires: { $gt: new Date() }
+    }).select("+passwordResetTokenHash +passwordResetExpires");
+
+    if (!user) {
+      return res.status(400).json({ message: "This password reset link is invalid or has expired. Request a new one." });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.passwordResetTokenHash = null;
+    user.passwordResetExpires = null;
+    await user.save();
+
+    return res.status(200).json({ message: "Password reset successfully. You can now log in." });
+  } catch (error) {
+    console.error("Reset password error:", error.message);
+    return res.status(500).json({ message: "Unable to reset your password right now." });
+  }
+};
+
 module.exports = {
     registerUser,
     loginUser,
+    forgotPassword,
+    resetPassword,
     changePassword,
     updateProfile,
     uploadProfileImage,

@@ -34,7 +34,7 @@ function Register() {
       <div className="auth-decoration auth-decoration-two" />
       <Link to="/" className="auth-brand">
         <span className="auth-brand-icon"><FaChartLine /></span>
-        <span>expense<span>wise</span></span>
+        <span>Expense <span>Tracker</span></span>
       </Link>
 
       <section className="auth-layout auth-layout-register">
@@ -89,7 +89,7 @@ function Register() {
           <div className="auth-form-footer"><span>Already have an account?</span> <Link to="/login">Log in</Link></div>
         </section>
       </section>
-      <footer className="auth-copyright">© {new Date().getFullYear()} Expensewise. Make every rupee count.</footer>
+      <footer className="auth-copyright">© {new Date().getFullYear()} Expense Tracker. Make every rupee count.</footer>
     </main>
   );
 }
